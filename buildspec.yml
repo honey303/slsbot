@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10  
+    commands:
+      - echo Installing Serverless...
+      - npm install -g serverless
+  pre_build:
+    commands:
+      - serverless config credentials --provider aws --key AKIAT2TERAUY4KHU4E4D --secret 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
+  build:
+    commands:
+      - echo Installing source NPM dependencies...
+      - npm install
+  post_build:
+    commands:
+      - sls deploy

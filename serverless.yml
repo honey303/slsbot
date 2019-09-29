@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: chatbot
+service: translatebot
 #app: your-app-name
 #tenant: your-tenant-name
 
@@ -68,7 +68,7 @@ functions:
           path: webhook
           method: POST
           integration: lambda
-           
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -110,12 +110,25 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
+resources:
+  Resources:
+    BotDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TranslateBot
+        AttributeDefinitions:
+          - AttributeName: text
+            AttributeType: S
+          - AttributeName: translated
+            AttributeType: S
+        KeySchema:
+          - AttributeName: text
+            KeyType: HASH
+          - AttributeName: translated
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"
