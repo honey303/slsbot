@@ -18,17 +18,40 @@ const exists = (userdata) => {
           }
       }
 
-      db.getItem(params, function(err, data) {
-          if (err) {
-              console.log(err); // an error occurred
-              reject(err);
-          }
-          else {
-            console.log(data); // successful response
-            resolve(data)
-          }
+      db.getItem(params, (err, data) => {
+        if (err) {
+          reject(err);
+        }
+        else {
+          resolve(data.Item);
+        }
       });
-    });
+  });
+};
+
+// Insert item in dynamodb table
+const addItem = (translatedText, userText) => {
+  return new Promise((resolve, reject) => {
+      var params = {
+          Item: {
+             "text": {
+               "S": userText
+              },
+             "translated": {
+               "S": translatedText
+              }
+          },
+          TableName: process.env.TABLE_NAME
+      };
+      db.putItem(params, function(err, data) {
+         if (err) {
+           reject(err);
+         }
+         else {
+           resolve(data);
+         }
+      });
+  });
 };
 
 // Your first function handler
@@ -42,6 +65,7 @@ module.exports.webhook = (event, context, callback) => {
     }
   }
 
+  // Uses AWS Translate to convert the text to the specific lang
   if (event.method === 'POST') {
       event.body.entry.map((entry) => {
         entry.messaging.map((messagingItem) => {
@@ -50,35 +74,52 @@ module.exports.webhook = (event, context, callback) => {
               const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${accessToken}`;
 
               // Checks if the item is present in the table
-              exists(messagingItem.message.text).then((data) => {
-                  console.log(data);
-              })
-              .catch((err) => {
-                  console.log('Error', err);
-              });
-
-              var params = {
-              	SourceLanguageCode: 'en',
-              	TargetLanguageCode: 'fr',
-              	Text: messagingItem.message.text
-              }
-
-              // Translates en text to french
-              translate.translateText(params, (err, data) => {
-                if (err) {
-                  console.log(err, err.stack);
+              exists(messagingItem.message.text).then((item) => {
+                console.log(item);
+                if (item !== undefined && item !== null) {
+                    const payload = {
+                        recipient: {
+                          id: messagingItem.sender.id
+                        },
+                        message: {
+                          text: item.translated.S
+                        }
+                    };
+                    axios.post(url, payload).then((response) => callback(null, response));
                 }
                 else {
-                  const payload = {
-                      recipient: {
-                        id: messagingItem.sender.id
-                      },
-                      message: {
-                        text: data.TranslatedText
+                  let payload = {}
+                  var params = {
+                    SourceLanguageCode: 'en',
+                    TargetLanguageCode: 'fr',
+                    Text: messagingItem.message.text
+                  }
+                  // Call AWS Translate api
+                  translate.translateText(params, (err, data) => {
+                      if (err) {
+                        console.log(err, err.stack);
                       }
-                  };
-                  axios.post(url, payload).then((response) => callback(null, response));
+                      else {
+                        payload = {
+                            recipient: {
+                              id: messagingItem.sender.id
+                            },
+                            message: {
+                              text: data.TranslatedText
+                            }
+                        };
+
+                        // Insert the new text in dynamodb table
+                        addItem(payload.message.text, messagingItem.message.text).then((res) => {
+                              console.log(res);
+                        });
+
+                        axios.post(url, payload).then((response) => callback(null, response));
+                      }
+                  });
                 }
+              }).catch((err) => {
+                console.log(err);
               });
           }
         });
