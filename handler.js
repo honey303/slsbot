@@ -4,6 +4,32 @@ const axios = require('axios');
 const AWS = require('aws-sdk');
 
 const translate = new AWS.Translate();
+const db = new AWS.DynamoDB();
+
+// check if the text is already present
+const exists = (userdata) => {
+  return new Promise((resolve, reject) => {
+      var params = {
+          TableName : process.env.TABLE_NAME,
+          Key : {
+            "text" : {
+              "S" : userdata
+            }
+          }
+      }
+
+      db.getItem(params, function(err, data) {
+          if (err) {
+              console.log(err); // an error occurred
+              reject(err);
+          }
+          else {
+            console.log(data); // successful response
+            resolve(data)
+          }
+      });
+    });
+};
 
 // Your first function handler
 module.exports.webhook = (event, context, callback) => {
@@ -20,8 +46,16 @@ module.exports.webhook = (event, context, callback) => {
       event.body.entry.map((entry) => {
         entry.messaging.map((messagingItem) => {
           if (messagingItem.message && messagingItem.message.text) {
-              const accessToken = 'EAAFU2XUlmxoBAApfKoOXPFxaBAJaYzeIZAbeB2caANkpZCkU0CFwTX4sZC1VjVDxf4gwNhE9QZCVAXHQVFfYnZAvKAuhpyYQX8j2N2dz7F0qoR0ZC2GhZCZBGmMIYb03V6JEvApvZBCiA2UrKwy0pqTcFjUdTYuAzxXXiPjEIvFovyhWUEI5fk1mN';
+              const accessToken = process.env.ACCESS_TOKEN;
               const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${accessToken}`;
+
+              // Checks if the item is present in the table
+              exists(messagingItem.message.text).then((data) => {
+                  console.log(data);
+              })
+              .catch((err) => {
+                  console.log('Error', err);
+              });
 
               var params = {
               	SourceLanguageCode: 'en',

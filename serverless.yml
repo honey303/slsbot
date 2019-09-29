@@ -68,6 +68,9 @@ functions:
           path: webhook
           method: POST
           integration: lambda
+    environment:
+      TABLE_NAME: 'SlsTranslateBot'
+      ACCESS_TOKEN: 'EAAFU2XUlmxoBAApfKoOXPFxaBAJaYzeIZAbeB2caANkpZCkU0CFwTX4sZC1VjVDxf4gwNhE9QZCVAXHQVFfYnZAvKAuhpyYQX8j2N2dz7F0qoR0ZC2GhZCZBGmMIYb03V6JEvApvZBCiA2UrKwy0pqTcFjUdTYuAzxXXiPjEIvFovyhWUEI5fk1mN'
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -115,17 +118,13 @@ resources:
     BotDynamoDbTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: TranslateBot
+        TableName: SlsTranslateBot
         AttributeDefinitions:
           - AttributeName: text
-            AttributeType: S
-          - AttributeName: translated
             AttributeType: S
         KeySchema:
           - AttributeName: text
             KeyType: HASH
-          - AttributeName: translated
-            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
