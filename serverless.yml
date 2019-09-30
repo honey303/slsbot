@@ -69,7 +69,7 @@ functions:
           method: POST
           integration: lambda
     environment:
-      TABLE_NAME: 'SlsTranslateBot'
+      TABLE_NAME: 'TranslateBot'
       ACCESS_TOKEN: 'EAAFU2XUlmxoBAApfKoOXPFxaBAJaYzeIZAbeB2caANkpZCkU0CFwTX4sZC1VjVDxf4gwNhE9QZCVAXHQVFfYnZAvKAuhpyYQX8j2N2dz7F0qoR0ZC2GhZCZBGmMIYb03V6JEvApvZBCiA2UrKwy0pqTcFjUdTYuAzxXXiPjEIvFovyhWUEI5fk1mN'
 
 #    The following are a few example events you can configure
@@ -115,16 +115,20 @@ functions:
 # you can add CloudFormation resource templates here
 resources:
   Resources:
-    BotDynamoDbTable:
+    SlsDynamoDbTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: SlsTranslateBot
+        TableName: TranslateBot
         AttributeDefinitions:
           - AttributeName: text
+            AttributeType: S
+          - AttributeName: lang
             AttributeType: S
         KeySchema:
           - AttributeName: text
             KeyType: HASH
+          - AttributeName: lang
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5

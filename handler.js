@@ -7,13 +7,16 @@ const translate = new AWS.Translate();
 const db = new AWS.DynamoDB();
 
 // check if the text is already present
-const exists = (userdata) => {
+const exists = (userdata, translateTo) => {
   return new Promise((resolve, reject) => {
       var params = {
           TableName : process.env.TABLE_NAME,
           Key : {
             "text" : {
               "S" : userdata
+            },
+            "lang": {
+              "S": translateTo
             }
           }
       }
@@ -30,12 +33,15 @@ const exists = (userdata) => {
 };
 
 // Insert item in dynamodb table
-const addItem = (translatedText, userText) => {
+const addItem = (userText, translateTo, translatedText) => {
   return new Promise((resolve, reject) => {
       var params = {
           Item: {
              "text": {
                "S": userText
+              },
+             "lang": {
+                "S": translateTo
               },
              "translated": {
                "S": translatedText
@@ -54,7 +60,7 @@ const addItem = (translatedText, userText) => {
   });
 };
 
-// Your first function handler
+// webhook function handler
 module.exports.webhook = (event, context, callback) => {
   if (event.method === 'GET') {
     // fb app verification
@@ -73,8 +79,29 @@ module.exports.webhook = (event, context, callback) => {
               const accessToken = process.env.ACCESS_TOKEN;
               const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${accessToken}`;
 
+              // testing
+              let splits = (messagingItem.message.text).split('-')
+              let text = splits[0]
+              let translateTo = splits[1]
+              // console.log(text + ' ' + translateTo);
+              // var params = {
+              //   SourceLanguageCode: 'en',
+              //   TargetLanguageCode: translateTo.trim(),
+              //   Text: text
+              // }
+              // translate.translateText(params, (err, data) => {
+              //     if (err) {
+              //       console.log(err, err.stack);
+              //     }
+              //     else {
+              //         console.log(data.TranslatedText);
+              //     }
+              // });
+
+            // testing
+
               // Checks if the item is present in the table
-              exists(messagingItem.message.text).then((item) => {
+              exists(text, translateTo).then((item) => {
                 console.log(item);
                 if (item !== undefined && item !== null) {
                     const payload = {
@@ -91,8 +118,8 @@ module.exports.webhook = (event, context, callback) => {
                   let payload = {}
                   var params = {
                     SourceLanguageCode: 'en',
-                    TargetLanguageCode: 'nl',
-                    Text: messagingItem.message.text
+                    TargetLanguageCode: translateTo.trim(),
+                    Text: text
                   }
                   // Call AWS Translate api
                   translate.translateText(params, (err, data) => {
@@ -110,7 +137,7 @@ module.exports.webhook = (event, context, callback) => {
                         };
 
                         // Insert the new text in dynamodb table
-                        addItem(payload.message.text, messagingItem.message.text).then((res) => {
+                        addItem(text, translateTo, data.TranslatedText).then((res) => {
                               console.log(res);
                         });
 
