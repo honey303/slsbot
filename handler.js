@@ -91,7 +91,7 @@ module.exports.webhook = (event, context, callback) => {
                   let payload = {}
                   var params = {
                     SourceLanguageCode: 'en',
-                    TargetLanguageCode: 'fr',
+                    TargetLanguageCode: 'nl',
                     Text: messagingItem.message.text
                   }
                   // Call AWS Translate api
