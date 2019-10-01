@@ -117,7 +117,7 @@ module.exports.webhook = (event, context, callback) => {
                 else {
                   let payload = {}
                   var params = {
-                    SourceLanguageCode: 'en',
+                    SourceLanguageCode: 'nl',
                     TargetLanguageCode: translateTo.trim(),
                     Text: text
                   }
