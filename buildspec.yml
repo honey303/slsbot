@@ -2,8 +2,8 @@ version: 0.2
 
 env:
   parameter-store:
-    ACCESS_KEY: /CodeBuild/slsbotkey
-    ACCESS_SECRET_KEY: /CodeBuild/slsbotsecret
+    ACCESS_KEY: /CodeBuild/key
+    ACCESS_SECRET_KEY: /CodeBuild/secret
 
 phases:
   install:
