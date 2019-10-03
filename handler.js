@@ -79,26 +79,9 @@ module.exports.webhook = (event, context, callback) => {
               const accessToken = process.env.ACCESS_TOKEN;
               const url = `https://graph.facebook.com/v2.6/me/messages?access_token=${accessToken}`;
 
-              // testing
               let splits = (messagingItem.message.text).split('-')
               let text = splits[0]
               let translateTo = splits[1]
-              // console.log(text + ' ' + translateTo);
-              // var params = {
-              //   SourceLanguageCode: 'en',
-              //   TargetLanguageCode: translateTo.trim(),
-              //   Text: text
-              // }
-              // translate.translateText(params, (err, data) => {
-              //     if (err) {
-              //       console.log(err, err.stack);
-              //     }
-              //     else {
-              //         console.log(data.TranslatedText);
-              //     }
-              // });
-
-            // testing
 
               // Checks if the item is present in the table
               exists(text, translateTo).then((item) => {
@@ -117,7 +100,7 @@ module.exports.webhook = (event, context, callback) => {
                 else {
                   let payload = {}
                   var params = {
-                    SourceLanguageCode: 'nl',
+                    SourceLanguageCode: 'en',
                     TargetLanguageCode: translateTo.trim(),
                     Text: text
                   }

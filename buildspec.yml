@@ -1,0 +1,24 @@
+version: 0.2
+
+env:
+  parameter-store:
+    ACCESS_KEY: /CodeBuild/KEY
+    ACCESS_SECRET_KEY: /CodeBuild/SECRET
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - echo Installing Serverless...
+      - npm install -g serverless
+  pre_build:
+    commands:
+      - serverless config credentials --provider aws --key $ACCESS_KEY --secret $ACCESS_SECRET_KEY
+  build:
+    commands:
+      - echo Installing source NPM dependencies...
+      - npm install
+  post_build:
+    commands:
+      - sls deploy
