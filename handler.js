@@ -9,7 +9,7 @@ const db = new AWS.DynamoDB();
 // check if the text is already present
 const exists = (userdata, translateTo) => {
   return new Promise((resolve, reject) => {
-      var params = {
+      let params = {
           TableName : process.env.TABLE_NAME,
           Key : {
             "text" : {
@@ -35,7 +35,7 @@ const exists = (userdata, translateTo) => {
 // Insert item in dynamodb table
 const addItem = (userText, translateTo, translatedText) => {
   return new Promise((resolve, reject) => {
-      var params = {
+      let params = {
           Item: {
              "text": {
                "S": userText
@@ -99,7 +99,7 @@ module.exports.webhook = (event, context, callback) => {
                 }
                 else {
                   let payload = {}
-                  var params = {
+                  let params = {
                     SourceLanguageCode: 'en',
                     TargetLanguageCode: translateTo.trim(),
                     Text: text
